@@ -1,0 +1,738 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Coding Learning Recommender</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.24.1/themes/prism.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .code-editor {
+            min-height: 300px;
+            font-family: 'Monaco', 'Courier New', monospace;
+        }
+        .analysis-card {
+            border-left: 4px solid #007bff;
+        }
+        .recommendation-card {
+            border-left: 4px solid #28a745;
+        }
+        .progress-card {
+            border-left: 4px solid #ffc107;
+        }
+        .score-badge {
+            font-size: 1.2em;
+            padding: 8px 12px;
+        }
+        .loading {
+            display: none;
+        }
+        .loading.active {
+            display: block;
+        }
+        .metric-item {
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            background: #f8f9fa;
+        }
+        .concept-tag {
+            background: #e9ecef;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.85em;
+            margin: 2px;
+            display: inline-block;
+        }
+        .suggestion-item {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 8px;
+        }
+        .validation-card {
+            border-left: 4px solid #dc3545;
+        }
+        .validation-correct {
+            border-left-color: #28a745 !important;
+        }
+        .error-item {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            padding: 8px;
+            border-radius: 4px;
+            margin-bottom: 6px;
+            font-size: 0.9em;
+        }
+        .solution-item {
+            background: #d1ecf1;
+            border: 1px solid #bee5eb;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 10px;
+        }
+        .test-case-item {
+            background: #e2e3e5;
+            border: 1px solid #d6d8db;
+            padding: 8px;
+            border-radius: 4px;
+            margin-bottom: 8px;
+            font-size: 0.9em;
+        }
+        .status-correct {
+            color: #28a745;
+            font-weight: bold;
+        }
+        .status-incorrect {
+            color: #dc3545;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Header -->
+            <div class="col-12">
+                <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+                    <div class="container">
+                        <a class="navbar-brand" href="#">
+                            <i class="fas fa-brain"></i> Coding Learning Recommender
+                        </a>
+                        <div class="navbar-nav ms-auto">
+                            <span class="navbar-text" id="userInfo">Welcome! Submit your code for analysis.</span>
+                        </div>
+                    </div>
+                </nav>
+            </div>
+        </div>
+
+        <div class="row mt-4">
+            <!-- Sidebar -->
+            <div class="col-md-3">
+                <div class="card">
+                    <div class="card-header">
+                        <h5><i class="fas fa-info-circle"></i> How to Use</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <h6>Getting Started</h6>
+                            <p class="small">Simply paste your code, select the programming language, and get instant analysis and recommendations!</p>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <h6>What You'll Get</h6>
+                            <ul class="small">
+                                <li>Code correctness validation</li>
+                                <li>Error detection & solutions</li>
+                                <li>Code quality analysis</li>
+                                <li>Complexity assessment</li>
+                                <li>Learning recommendations</li>
+                                <li>Practice problems</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Learning Resources -->
+                <div class="card mt-3">
+                    <div class="card-header">
+                        <h5><i class="fas fa-book"></i> Quick Tips</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="metric-item">
+                            <strong>Best Practices:</strong>
+                            <small>Use meaningful variable names and add comments</small>
+                        </div>
+                        <div class="metric-item">
+                            <strong>Optimization:</strong>
+                            <small>Consider time and space complexity</small>
+                        </div>
+                        <div class="metric-item">
+                            <strong>Code Style:</strong>
+                            <small>Follow language conventions</small>
+                        </div>
+                        <div class="metric-item">
+                            <strong>Validation:</strong>
+                            <small>Use "Expected Behavior" for better error detection</small>
+                        </div>
+                        <div class="metric-item">
+                            <strong>AI Powered:</strong>
+                            <small>Get LLM-based correctness analysis</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main Content -->
+            <div class="col-md-9">
+                <!-- Code Submission Tab -->
+                <div class="tab-content">
+                    <div class="tab-pane fade show active" id="submission">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5><i class="fas fa-code"></i> Submit Your Code for Analysis</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-3">
+                                        <div class="mb-3">
+                                            <label class="form-label">Problem Title</label>
+                                            <input type="text" class="form-control" id="problemTitle" placeholder="e.g., Two Sum">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="mb-3">
+                                            <label class="form-label">Programming Language</label>
+                                            <select class="form-control" id="language">
+                                                <option value="python">Python</option>
+                                                <option value="java">Java</option>
+                                                <option value="javascript">JavaScript</option>
+                                                <option value="cpp">C++</option>
+                                                <option value="go">Go</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="mb-3">
+                                            <label class="form-label">Expected Behavior (Optional)</label>
+                                            <input type="text" class="form-control" id="expectedBehavior" placeholder="e.g., Find two numbers that add to target">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="mb-3">
+                                            <label class="form-label">Actions</label><br>
+                                            <button class="btn btn-primary" onclick="analyzeCode()" id="analyzeBtn">
+                                                <i class="fas fa-search"></i> Analyze Code
+                                            </button>
+                                            <button class="btn btn-secondary ms-2" onclick="validateOnly()" id="validateBtn">
+                                                <i class="fas fa-check"></i> Validate Only
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label class="form-label">Your Code</label>
+                                    <textarea class="form-control code-editor" id="codeInput" rows="15" 
+                                              placeholder="Paste your code here..."></textarea>
+                                </div>
+
+                                <div class="loading" id="analysisLoading">
+                                    <div class="text-center">
+                                        <div class="spinner-border text-primary" role="status">
+                                            <span class="visually-hidden">Analyzing...</span>
+                                        </div>
+                                        <p class="mt-2">Analyzing your code...</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Analysis Results -->
+                        <div id="analysisResults" style="display: none;">
+                            <!-- Validation Results -->
+                            <div class="row mt-4" id="validationSection" style="display: none;">
+                                <div class="col-12">
+                                    <div class="card validation-card" id="validationCard">
+                                        <div class="card-header">
+                                            <h5><i class="fas fa-bug"></i> Code Validation Results</h5>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="mb-3">
+                                                <h6>Overall Status: <span id="validationStatus"></span></h6>
+                                                <p id="validationExplanation"></p>
+                                            </div>
+                                            
+                                            <!-- Error Sections -->
+                                            <div id="errorsSection" style="display: none;">
+                                                <div id="syntaxErrors"></div>
+                                                <div id="logicErrors"></div>
+                                                <div id="runtimeErrors"></div>
+                                                <div id="performanceIssues"></div>
+                                                <div id="bestPracticeViolations"></div>
+                                            </div>
+                                            
+                                            <!-- Solutions Section -->
+                                            <div id="solutionsSection" style="display: none;">
+                                                <h6><i class="fas fa-wrench"></i> Solutions:</h6>
+                                                <div id="solutionsList"></div>
+                                            </div>
+                                            
+                                            <!-- Test Cases Section -->
+                                            <div id="testCasesSection" style="display: none;">
+                                                <h6><i class="fas fa-vial"></i> Test Cases:</h6>
+                                                <div id="testCasesList"></div>
+                                            </div>
+                                            
+                                            <!-- Overall Assessment -->
+                                            <div id="assessmentSection" style="display: none;">
+                                                <h6><i class="fas fa-clipboard-check"></i> Overall Assessment:</h6>
+                                                <p id="overallAssessment"></p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="row mt-4">
+                                <!-- Code Analysis -->
+                                <div class="col-md-6">
+                                    <div class="card analysis-card">
+                                        <div class="card-header">
+                                            <h5><i class="fas fa-microscope"></i> Code Analysis</h5>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="row text-center mb-3">
+                                                <div class="col-6">
+                                                    <span class="badge bg-primary score-badge" id="qualityScore">0</span>
+                                                    <div>Quality Score</div>
+                                                </div>
+                                                <div class="col-6">
+                                                    <span class="badge bg-info score-badge" id="complexityScore">0</span>
+                                                    <div>Complexity Score</div>
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="mb-3">
+                                                <strong>Time Complexity:</strong> <span id="timeComplexity">-</span>
+                                            </div>
+                                            <div class="mb-3">
+                                                <strong>Space Complexity:</strong> <span id="spaceComplexity">-</span>
+                                            </div>
+                                            
+                                            <div class="mb-3">
+                                                <strong>Patterns Detected:</strong>
+                                                <div id="patternsDetected"></div>
+                                            </div>
+                                            
+                                            <div class="mb-3">
+                                                <strong>Algorithms Used:</strong>
+                                                <div id="algorithmsUsed"></div>
+                                            </div>
+                                            
+                                            <div class="mb-3">
+                                                <strong>Data Structures:</strong>
+                                                <div id="dataStructures"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Recommendations -->
+                                <div class="col-md-6">
+                                    <div class="card recommendation-card">
+                                        <div class="card-header">
+                                            <h5><i class="fas fa-lightbulb"></i> Recommendations</h5>
+                                        </div>
+                                        <div class="card-body">
+                                            <h6>Knowledge Gaps</h6>
+                                            <div id="knowledgeGaps"></div>
+                                            
+                                            <h6 class="mt-3">Concepts to Learn</h6>
+                                            <div id="conceptsToLearn"></div>
+                                            
+                                            <h6 class="mt-3">Improvement Suggestions</h6>
+                                            <div id="improvementSuggestions"></div>
+                                            
+                                            <h6 class="mt-3">Estimated Study Time</h6>
+                                            <span class="badge bg-warning" id="studyTime">0 minutes</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Practice Problems -->
+                            <div class="row mt-4">
+                                <div class="col-12">
+                                    <div class="card">
+                                        <div class="card-header">
+                                            <h5><i class="fas fa-dumbbell"></i> Recommended Practice Problems</h5>
+                                        </div>
+                                        <div class="card-body">
+                                            <div id="practiceProblems"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Progress Tab -->
+                <div id="progressContent" style="display: none;">
+                    <div class="card progress-card">
+                        <div class="card-header">
+                            <h5><i class="fas fa-chart-line"></i> Learning Progress</h5>
+                        </div>
+                        <div class="card-body">
+                            <div id="progressData"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Learning Path Tab -->
+                <div id="learningPathContent" style="display: none;">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5><i class="fas fa-road"></i> Personalized Learning Path</h5>
+                        </div>
+                        <div class="card-body">
+                            <div id="learningPathData"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.24.1/components/prism-core.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.24.1/plugins/autoloader/prism-autoloader.min.js"></script>
+    
+    <script>
+        // No user authentication required - anonymous usage
+
+        // Analyze submitted code
+        async function analyzeCode() {
+            const code = document.getElementById('codeInput').value;
+            const language = document.getElementById('language').value;
+            const problemTitle = document.getElementById('problemTitle').value;
+            const expectedBehavior = document.getElementById('expectedBehavior').value;
+            
+            if (!code || !problemTitle) {
+                alert('Please fill in the problem title and code');
+                return;
+            }
+            
+            // Show loading
+            document.getElementById('analysisLoading').classList.add('active');
+            document.getElementById('analyzeBtn').disabled = true;
+            document.getElementById('validateBtn').disabled = true;
+            
+            try {
+                const response = await fetch('/api/analyze', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        code: code,
+                        language: language,
+                        problem_title: problemTitle,
+                        expected_behavior: expectedBehavior
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.analysis) {
+                    displayAnalysisResults(data);
+                } else {
+                    alert('Error analyzing code: ' + (data.error || 'Unknown error'));
+                }
+            } catch (error) {
+                alert('Error analyzing code: ' + error.message);
+            } finally {
+                // Hide loading
+                document.getElementById('analysisLoading').classList.remove('active');
+                document.getElementById('analyzeBtn').disabled = false;
+                document.getElementById('validateBtn').disabled = false;
+            }
+        }
+        
+        // Validate code only
+        async function validateOnly() {
+            const code = document.getElementById('codeInput').value;
+            const language = document.getElementById('language').value;
+            const expectedBehavior = document.getElementById('expectedBehavior').value;
+            
+            if (!code) {
+                alert('Please enter your code');
+                return;
+            }
+            
+            // Show loading
+            document.getElementById('analysisLoading').classList.add('active');
+            document.getElementById('analyzeBtn').disabled = true;
+            document.getElementById('validateBtn').disabled = true;
+            
+            try {
+                const response = await fetch('/api/validate', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        code: code,
+                        language: language,
+                        expected_behavior: expectedBehavior
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.validation) {
+                    displayValidationResults(data);
+                } else {
+                    alert('Error validating code: ' + (data.error || 'Unknown error'));
+                }
+            } catch (error) {
+                alert('Error validating code: ' + error.message);
+            } finally {
+                // Hide loading
+                document.getElementById('analysisLoading').classList.remove('active');
+                document.getElementById('analyzeBtn').disabled = false;
+                document.getElementById('validateBtn').disabled = false;
+            }
+        }
+
+        // Display validation results only
+        function displayValidationResults(data) {
+            const validation = data.validation;
+            
+            // Show validation section
+            document.getElementById('validationSection').style.display = 'block';
+            document.getElementById('analysisResults').style.display = 'block';
+            
+            // Update validation status
+            const isCorrect = validation.is_correct;
+            const statusElement = document.getElementById('validationStatus');
+            const cardElement = document.getElementById('validationCard');
+            
+            if (isCorrect) {
+                statusElement.innerHTML = '<span class="status-correct">✅ CORRECT</span>';
+                cardElement.classList.add('validation-correct');
+            } else {
+                statusElement.innerHTML = '<span class="status-incorrect">❌ ISSUES FOUND</span>';
+                cardElement.classList.remove('validation-correct');
+            }
+            
+            // Show explanation
+            if (validation.correctness_explanation) {
+                document.getElementById('validationExplanation').textContent = validation.correctness_explanation;
+            }
+            
+            // Display errors
+            displayErrorSections(validation);
+            
+            // Display solutions
+            displaySolutions(validation.solutions || []);
+            
+            // Display test cases
+            displayTestCases(validation.test_cases || []);
+            
+            // Display overall assessment
+            if (validation.overall_assessment) {
+                document.getElementById('assessmentSection').style.display = 'block';
+                document.getElementById('overallAssessment').textContent = validation.overall_assessment;
+            }
+        }
+        
+        // Display analysis results
+        function displayAnalysisResults(data) {
+            try {
+                const analysis = data.analysis || {};
+                const recommendations = data.recommendations || {};
+                
+                // Display validation results if available
+                if (data.validation) {
+                    displayValidationResults(data);
+                }
+                
+                // Update scores with safe defaults
+                document.getElementById('qualityScore').textContent = Math.round(analysis.quality_score || 0);
+                document.getElementById('complexityScore').textContent = Math.round(analysis.complexity_score || 0);
+                document.getElementById('timeComplexity').textContent = analysis.time_complexity || 'Unknown';
+                document.getElementById('spaceComplexity').textContent = analysis.space_complexity || 'Unknown';
+            
+                // Display patterns
+                if (Array.isArray(analysis.patterns)) {
+                    const patternsDiv = document.getElementById('patternsDetected');
+                    patternsDiv.innerHTML = analysis.patterns.map(p => 
+                        `<span class="concept-tag">${p}</span>`
+                    ).join('');
+                }
+                
+                // Display algorithms
+                if (Array.isArray(analysis.algorithms)) {
+                    const algorithmsDiv = document.getElementById('algorithmsUsed');
+                    algorithmsDiv.innerHTML = analysis.algorithms.map(a => 
+                        `<span class="concept-tag">${a}</span>`
+                    ).join('');
+                }
+                
+                // Display data structures
+                if (Array.isArray(analysis.data_structures)) {
+                    const dataStructuresDiv = document.getElementById('dataStructures');
+                    dataStructuresDiv.innerHTML = analysis.data_structures.map(ds => 
+                        `<span class="concept-tag">${ds}</span>`
+                    ).join('');
+                }
+                
+                // Display knowledge gaps
+                if (Array.isArray(recommendations.knowledge_gaps)) {
+                    const gapsDiv = document.getElementById('knowledgeGaps');
+                    gapsDiv.innerHTML = recommendations.knowledge_gaps.map(gap => 
+                        `<div class="suggestion-item">
+                            <strong>${gap.concept}</strong> (${gap.severity})<br>
+                            <small>${gap.reason}</small>
+                        </div>`
+                    ).join('');
+                }
+                
+                // Display concepts to learn
+                if (Array.isArray(recommendations.concepts_to_learn)) {
+                    const conceptsDiv = document.getElementById('conceptsToLearn');
+                    conceptsDiv.innerHTML = recommendations.concepts_to_learn.map(concept => 
+                        `<div class="suggestion-item">
+                            <strong>${concept.concept}</strong> - ${concept.difficulty}<br>
+                            <small>Estimated time: ${concept.estimated_time} minutes</small>
+                        </div>`
+                    ).join('');
+                }
+                
+                // Display improvement suggestions
+                if (Array.isArray(recommendations.improvement_suggestions)) {
+                    const suggestionsDiv = document.getElementById('improvementSuggestions');
+                    suggestionsDiv.innerHTML = recommendations.improvement_suggestions.map(suggestion => 
+                        `<div class="suggestion-item">${suggestion}</div>`
+                    ).join('');
+                }
+            
+                // Display study time
+                if (recommendations.estimated_study_time) {
+                    document.getElementById('studyTime').textContent = `${recommendations.estimated_study_time} minutes`;
+                }
+                
+                // Display practice problems
+                if (Array.isArray(recommendations.practice_problems)) {
+                    const problemsDiv = document.getElementById('practiceProblems');
+                    problemsDiv.innerHTML = recommendations.practice_problems.map(problem => 
+                        `<div class="col-md-6 mb-3">
+                            <div class="card">
+                                <div class="card-body">
+                                    <h6>${problem.title}</h6>
+                                    <p>Difficulty: <span class="badge bg-secondary">${problem.difficulty}</span></p>
+                                    <p>Concept: ${problem.concept}</p>
+                                    <a href="${problem.url}" target="_blank" class="btn btn-sm btn-primary">
+                                        <i class="fas fa-external-link-alt"></i> Solve Problem
+                                    </a>
+                                </div>
+                            </div>
+                        </div>`
+                    ).join('');
+                }
+                
+                // Show results
+                document.getElementById('analysisResults').style.display = 'block';
+                
+            } catch (error) {
+                console.error('Error displaying analysis results:', error);
+                alert('Error displaying results. Please check the console for details.');
+            }
+        }
+        
+        // Helper function to display error sections
+        function displayErrorSections(validation) {
+            const errorTypes = [
+                { key: 'syntax_errors', id: 'syntaxErrors', title: '🔴 Syntax Errors:', class: 'error-item' },
+                { key: 'logic_errors', id: 'logicErrors', title: '🟠 Logic Errors:', class: 'error-item' },
+                { key: 'runtime_errors', id: 'runtimeErrors', title: '🟡 Runtime Errors:', class: 'error-item' },
+                { key: 'performance_issues', id: 'performanceIssues', title: '🔵 Performance Issues:', class: 'error-item' },
+                { key: 'best_practice_violations', id: 'bestPracticeViolations', title: '🟣 Best Practice Violations:', class: 'error-item' }
+            ];
+            
+            let hasErrors = false;
+            
+            errorTypes.forEach(type => {
+                const errors = validation[type.key] || [];
+                const element = document.getElementById(type.id);
+                
+                if (errors.length > 0) {
+                    hasErrors = true;
+                    element.innerHTML = `
+                        <h6>${type.title}</h6>
+                        ${errors.map(error => `<div class="${type.class}">${error}</div>`).join('')}
+                    `;
+                } else {
+                    element.innerHTML = '';
+                }
+            });
+            
+            document.getElementById('errorsSection').style.display = hasErrors ? 'block' : 'none';
+        }
+        
+        // Helper function to display solutions
+        function displaySolutions(solutions) {
+            try {
+                if (!Array.isArray(solutions) || solutions.length === 0) {
+                    document.getElementById('solutionsSection').style.display = 'none';
+                    return;
+                }
+                
+                document.getElementById('solutionsSection').style.display = 'block';
+                document.getElementById('solutionsList').innerHTML = solutions.map((solution, index) => `
+                    <div class="solution-item">
+                        <h6>Solution ${index + 1}:</h6>
+                        <p><strong>Issue:</strong> ${solution.issue || 'Unknown'}</p>
+                        <p><strong>Fix:</strong> ${solution.solution || 'No solution provided'}</p>
+                        ${solution.corrected_code ? `<p><strong>Corrected Code:</strong><br><code>${solution.corrected_code}</code></p>` : ''}
+                        ${solution.explanation ? `<p><strong>Why:</strong> ${solution.explanation}</p>` : ''}
+                    </div>
+                `).join('');
+            } catch (error) {
+                console.error('Error displaying solutions:', error);
+                document.getElementById('solutionsSection').style.display = 'none';
+            }
+        }
+        
+        // Helper function to display test cases
+        function displayTestCases(testCases) {
+            try {
+                if (!Array.isArray(testCases) || testCases.length === 0) {
+                    document.getElementById('testCasesSection').style.display = 'none';
+                    return;
+                }
+                
+                document.getElementById('testCasesSection').style.display = 'block';
+                document.getElementById('testCasesList').innerHTML = testCases.map((test, index) => `
+                    <div class="test-case-item">
+                        <h6>Test ${index + 1}:</h6>
+                        <p><strong>Input:</strong> ${test.input || 'N/A'}</p>
+                        <p><strong>Expected:</strong> ${test.expected_output || 'N/A'}</p>
+                        <p><strong>Actual:</strong> ${test.actual_behavior || 'N/A'}</p>
+                    </div>
+                `).join('');
+            } catch (error) {
+                console.error('Error displaying test cases:', error);
+                document.getElementById('testCasesSection').style.display = 'none';
+            }
+        }
+
+        // Progress and learning path functionality removed for anonymous usage
+        // These features require user accounts to track progress over time
+
+        // Helper function to hide all tabs
+        function hideAllTabs() {
+            document.getElementById('analysisResults').style.display = 'none';
+            document.getElementById('progressContent').style.display = 'none';
+            document.getElementById('learningPathContent').style.display = 'none';
+        }
+
+        // Show submission tab by default
+        function showSubmissionTab() {
+            hideAllTabs();
+            // The submission form is always visible, just hide the results
+        }
+
+        // Initialize the page
+        document.addEventListener('DOMContentLoaded', function() {
+            showSubmissionTab();
+        });
+    </script>
+</body>
+</html>
